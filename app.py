@@ -51,8 +51,8 @@ def load_database_from_file(file_path: str):
     database = []
     for _, row in df.iterrows():
         if pd.notna(row.get('IAST Verse')) and str(row.get('IAST Verse')).strip():
-            # Iegūst NR. vērtību un pārveido par int
-            nr_value = row.get('NR.', 0)
+            # Iegūst NR vērtību un pārveido par int
+            nr_value = row.get('NR', 0)
             if pd.notna(nr_value):
                 try:
                     nr_value = int(nr_value)
