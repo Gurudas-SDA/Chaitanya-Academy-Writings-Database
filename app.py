@@ -101,15 +101,17 @@ def get_original_sources_for_cited(database, cited_source):
 def get_verses_by_source(database, cited_source, original_source, max_verses):
     """Iegūst pantus sākot no izvēlētā Original Source, sakārtotus pēc NR. kolonnas"""
     
-    # Vispirms atrod izvēlētā ieraksta NR.
-    start_nr = None
+    # Atrod visus NR. kas atbilst izvēlētajam Original Source
+    matching_nrs = []
     for entry in database:
         if entry['cited_in'] == cited_source and entry['original_source'] == original_source:
-            start_nr = entry['nr']
-            break
+            matching_nrs.append(entry['nr'])
     
-    if start_nr is None:
+    if not matching_nrs:
         return []
+    
+    # Ņem MAZĀKO NR. no izvēlētā Original Source (pirmo pantu)
+    start_nr = min(matching_nrs)
     
     # Atlasa visus ierakstus ar pareizo Cited In un NR. >= start_nr
     matching_verses = []
