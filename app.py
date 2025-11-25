@@ -5,7 +5,7 @@ import re
 import unicodedata
 import os
 
-st.set_page_config(page_title="Gauḍīya Vaiṣṇava Verse Finder", layout="wide")
+st.set_page_config(page_title="Chaitanya Academy Writings Database", layout="wide")
 
 # === Ceļš uz datubāzi (Excel blakus app.py) ===
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -79,13 +79,23 @@ def get_original_sources_for_cited(database, cited_source):
     return sorted(original_sources)
 
 def get_verses_by_source(database, cited_source, original_source, max_verses):
-    """Iegūst pantus pēc izvēlētajiem avotiem"""
+    """Iegūst pantus sākot no izvēlētā Original Source un turpina nākamos no tā paša Cited In"""
     verses = []
+    found_start = False
+    
     for entry in database:
-        if entry['cited_in'] == cited_source and entry['original_source'] == original_source:
-            verses.append(entry)
-            if len(verses) >= max_verses:
-                break
+        # Meklē tikai ierakstus ar pareizo Cited In
+        if entry['cited_in'] == cited_source:
+            # Kad atrod izvēlēto Original Source, sāk vākt
+            if entry['original_source'] == original_source:
+                found_start = True
+            
+            # Vāc pantus tikai pēc tam, kad ir atrasts sākuma punkts
+            if found_start:
+                verses.append(entry)
+                if len(verses) >= max_verses:
+                    break
+    
     return verses
 
 def clean_author(author: str) -> str:
@@ -126,7 +136,7 @@ def verse_lines_from_cell(cell: str):
 
 # === App ===
 def main():
-    st.markdown("<h1>Gauḍīya Vaiṣṇava Verse Finder</h1>", unsafe_allow_html=True)
+    st.markdown("<h1>Chaitanya Academy Writings Database</h1>", unsafe_allow_html=True)
 
     # Automātiska ielāde
     if 'database' not in st.session_state and os.path.exists(DEFAULT_DB_FILE):
