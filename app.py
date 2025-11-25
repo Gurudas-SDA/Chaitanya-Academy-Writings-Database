@@ -51,7 +51,18 @@ def load_database_from_file(file_path: str):
     database = []
     for _, row in df.iterrows():
         if pd.notna(row.get('IAST Verse')) and str(row.get('IAST Verse')).strip():
+            # Iegūst NR. vērtību un pārveido par int
+            nr_value = row.get('NR.', 0)
+            if pd.notna(nr_value):
+                try:
+                    nr_value = int(nr_value)
+                except:
+                    nr_value = 0
+            else:
+                nr_value = 0
+                
             database.append({
+                'nr': nr_value,
                 'iast_verse': clean_verse_text(str(row.get('IAST Verse', '')).strip()),
                 'original_source': str(row.get('Original Source', '')).strip() if pd.notna(row.get('Original Source')) else '',
                 'author': str(row.get('Author', '')).strip() if pd.notna(row.get('Author')) else '',
@@ -70,33 +81,45 @@ def get_unique_sources(database):
     return sorted(list(sources))
 
 def get_original_sources_for_cited(database, cited_source):
-    """Iegūst visus Original Source ierakstus konkrētajam Cited In avotam"""
-    original_sources = []
+    """Iegūst visus Original Source ierakstus konkrētajam Cited In avotam, sakārtotus pēc NR."""
+    original_sources_with_nr = []
+    seen = set()
+    
     for entry in database:
         if entry['cited_in'] == cited_source and entry['original_source']:
-            if entry['original_source'] not in original_sources:
-                original_sources.append(entry['original_source'])
-    return sorted(original_sources)
+            if entry['original_source'] not in seen:
+                seen.add(entry['original_source'])
+                original_sources_with_nr.append({
+                    'source': entry['original_source'],
+                    'nr': entry['nr']
+                })
+    
+    # Sakārto pēc NR. un atgriež tikai source nosaukumus
+    original_sources_with_nr.sort(key=lambda x: x['nr'])
+    return [item['source'] for item in original_sources_with_nr]
 
 def get_verses_by_source(database, cited_source, original_source, max_verses):
-    """Iegūst pantus sākot no izvēlētā Original Source un turpina nākamos no tā paša Cited In"""
-    verses = []
-    found_start = False
+    """Iegūst pantus sākot no izvēlētā Original Source, sakārtotus pēc NR. kolonnas"""
     
+    # Vispirms atrod izvēlētā ieraksta NR.
+    start_nr = None
     for entry in database:
-        # Meklē tikai ierakstus ar pareizo Cited In
-        if entry['cited_in'] == cited_source:
-            # Kad atrod izvēlēto Original Source, sāk vākt
-            if entry['original_source'] == original_source:
-                found_start = True
-            
-            # Vāc pantus tikai pēc tam, kad ir atrasts sākuma punkts
-            if found_start:
-                verses.append(entry)
-                if len(verses) >= max_verses:
-                    break
+        if entry['cited_in'] == cited_source and entry['original_source'] == original_source:
+            start_nr = entry['nr']
+            break
     
-    return verses
+    if start_nr is None:
+        return []
+    
+    # Atlasa visus ierakstus ar pareizo Cited In un NR. >= start_nr
+    matching_verses = []
+    for entry in database:
+        if entry['cited_in'] == cited_source and entry['nr'] >= start_nr:
+            matching_verses.append(entry)
+    
+    # Sakārto pēc NR. un atgriež tikai max_verses daudzumu
+    matching_verses.sort(key=lambda x: x['nr'])
+    return matching_verses[:max_verses]
 
 def clean_author(author: str) -> str:
     """Attīra autora vārdu no 'by' un nederīgām vērtībām"""
