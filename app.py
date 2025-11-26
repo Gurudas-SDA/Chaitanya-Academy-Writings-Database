@@ -68,7 +68,10 @@ def load_database_from_file(file_path: str):
                 'author': str(row.get('Author', '')).strip() if pd.notna(row.get('Author')) else '',
                 'context': str(row.get('Context', '')).strip() if pd.notna(row.get('Context')) else '',
                 'english_translation': clean_verse_text(str(row.get('Translation', '')).strip()) if pd.notna(row.get('Translation')) else '',
-                'cited_in': str(row.get('Cited In', '')).strip() if pd.notna(row.get('Cited In')) else ''
+                'cited_in': str(row.get('Cited In', '')).strip() if pd.notna(row.get('Cited In')) else '',
+                'type': str(row.get('Type', '')).strip() if pd.notna(row.get('Type')) else '',
+                'description': str(row.get('Description', '')).strip() if pd.notna(row.get('Description')) else '',
+                'essence_gemini': str(row.get('Essence by Gemini 2.5 Pro', '')).strip() if pd.notna(row.get('Essence by Gemini 2.5 Pro')) else ''
             })
     return database, len(database)
 
@@ -182,6 +185,11 @@ def main():
     # Sānjosla ar Max verse number slider
     with st.sidebar:
         max_verses = st.slider("Max verse number", 1, 50, 10)
+        
+        # Cache clear poga
+        if st.button("🔄 Reload Database", help="Clear cache and reload database from file"):
+            st.cache_data.clear()
+            st.rerun()
     
     # Galvenā daļa
     col1, col2 = st.columns([1, 1])
@@ -239,8 +247,21 @@ def main():
                         st.markdown(f"<p>{format_source_and_author(verse_data['original_source'], verse_data['author'])}</p>",
                                     unsafe_allow_html=True)
                         
-                        # Neliela atstarpe starp avotu un pantu
-                        st.markdown("<div style='height: 0.3rem;'></div>", unsafe_allow_html=True)
+                        # DEBUG: Parādi visus key-value pārus
+                        st.write("DEBUG - Available keys:", list(verse_data.keys()))
+                        
+                        # Papildu lauki zem Original Source (ja tie eksistē)
+                        if verse_data.get('type'):
+                            st.markdown(f"<p><strong>Type:</strong> {verse_data['type']}</p>", unsafe_allow_html=True)
+                        
+                        if verse_data.get('description'):
+                            st.markdown(f"<p><strong>Description:</strong> {verse_data['description']}</p>", unsafe_allow_html=True)
+                        
+                        if verse_data.get('essence_gemini'):
+                            st.markdown(f"<p><strong>Essence by Gemini 2.5 Pro:</strong> {verse_data['essence_gemini']}</p>", unsafe_allow_html=True)
+                        
+                        # Neliela atstarpe starp metadatiem un pantu
+                        st.markdown("<div style='height: 0.5rem;'></div>", unsafe_allow_html=True)
                         
                         # Pantus drukājam pa rindām
                         lines = verse_lines_from_cell(verse_data['iast_verse'])
