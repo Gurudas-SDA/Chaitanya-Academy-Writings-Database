@@ -235,6 +235,13 @@ def main():
                     col_verse, col_trans = st.columns([1.2, 1])
                     
                     with col_verse:
+                        # Original Source PIRMS panta
+                        st.markdown(f"<p>{format_source_and_author(verse_data['original_source'], verse_data['author'])}</p>",
+                                    unsafe_allow_html=True)
+                        
+                        # Neliela atstarpe starp avotu un pantu
+                        st.markdown("<div style='height: 0.3rem;'></div>", unsafe_allow_html=True)
+                        
                         # Pantus drukājam pa rindām
                         lines = verse_lines_from_cell(verse_data['iast_verse'])
                         if lines:
@@ -242,18 +249,6 @@ def main():
                                 st.markdown(f"<p class='verse-line'>{ln}</p>", unsafe_allow_html=True)
                         else:
                             st.markdown(f"<p class='verse-line'>{verse_data['iast_verse']}</p>", unsafe_allow_html=True)
-                        
-                        # Atstarpe starp pantu un avotiem
-                        st.markdown("<div class='verse-gap'></div>", unsafe_allow_html=True)
-                        
-                        # Primārais avots
-                        st.markdown(f"<p>{format_source_and_author(verse_data['original_source'], verse_data['author'])}</p>",
-                                    unsafe_allow_html=True)
-                        # Sekundārais avots
-                        if verse_data['cited_in']:
-                            cited_html = render_cited_item(verse_data['cited_in'])
-                            if cited_html:
-                                st.markdown(f"<p>{cited_html}</p>", unsafe_allow_html=True)
                     
                     with col_trans:
                         st.markdown("<p><b>Translation</b></p>", unsafe_allow_html=True)
