@@ -243,12 +243,9 @@ def main():
                     col_verse, col_trans = st.columns([1.2, 1])
                     
                     with col_verse:
-                        # Original Source PIRMS panta
-                        st.markdown(f"<p>{format_source_and_author(verse_data['original_source'], verse_data['author'])}</p>",
+                        # Original Source PIRMS panta (BOLD)
+                        st.markdown(f"<p><strong>{format_source_and_author(verse_data['original_source'], verse_data['author'])}</strong></p>",
                                     unsafe_allow_html=True)
-                        
-                        # DEBUG: Parādi visus key-value pārus
-                        st.write("DEBUG - Available keys:", list(verse_data.keys()))
                         
                         # Papildu lauki zem Original Source (ja tie eksistē)
                         if verse_data.get('type'):
